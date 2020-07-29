@@ -6,9 +6,16 @@ module KeycloakAdmin
       @realm_client = realm_client
     end
 
-    def create!(username, email, password, email_verified, locale)
-      user = save(build(username, email, password, email_verified, locale))
+    def create!(params)
+      user = save(build(params))
       search(user.email)&.first
+    end
+
+    def send_emails(user_id, actions)
+      execute_http do
+        RestClient.put(send_emails_url(user_id), actions.to_json, headers)
+      end
+      user_id
     end
 
     def save(user_representation)
@@ -110,6 +117,11 @@ module KeycloakAdmin
       "#{users_url(user_id)}/reset-password"
     end
 
+    def send_emails_url(user_id)
+      raise ArgumentError.new("user_id must be defined") if user_id.nil?
+      "#{users_url(user_id)}/execute-actions-email"
+    end
+
     def groups_url(user_id)
       raise ArgumentError.new("user_id must be defined") if user_id.nil?
       "#{users_url(user_id)}/groups"
@@ -128,15 +140,15 @@ module KeycloakAdmin
 
     private
 
-    def build(username, email, password, email_verified, locale)
+    def build(params)
       user                     = UserRepresentation.new
-      user.email               = email
-      user.username            = username
-      user.email_verified      = email_verified
+      user.email               = params[:email]
+      user.username            = params[:username]
+      user.email_verified      = params[:email_verified]
       user.enabled             = true
-      user.attributes          = {}
-      user.attributes[:locale] = locale if locale
-      user.add_credential(CredentialRepresentation.from_password(password))
+      user.attributes          = params[:attributes] || {}
+      user.required_actions    = params[:required_actions] || []
+      user.add_credential(CredentialRepresentation.from_password(params[:password])) if params[:password]
       user
     end
   end

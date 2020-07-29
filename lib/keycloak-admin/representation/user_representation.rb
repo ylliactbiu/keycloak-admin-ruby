@@ -1,17 +1,18 @@
 module KeycloakAdmin
   class UserRepresentation < Representation
     attr_accessor :id,
-      :created_timestamp,
-      :attributes,
-      :origin,
-      :username,
-      :email,
-      :enabled,
-      :email_verified,
-      :first_name,
-      :last_name,
-      :credentials,
-      :federated_identities
+                  :created_timestamp,
+                  :attributes,
+                  :origin,
+                  :username,
+                  :email,
+                  :enabled,
+                  :email_verified,
+                  :first_name,
+                  :last_name,
+                  :required_actions,
+                  :credentials,
+                  :federated_identities
 
     def self.from_hash(hash)
       user                      = new
@@ -25,6 +26,7 @@ module KeycloakAdmin
       user.first_name           = hash["firstName"]
       user.last_name            = hash["lastName"]
       user.attributes           = hash["attributes"]
+      user.required_actions     = hash["requiredActions"] || []
       user.credentials          = hash["credentials"]&.map{ |hash| CredentialRepresentation.from_hash(hash) } || []
       user.federated_identities = hash["federatedIdentities"]&.map { |hash| FederatedIdentityRepresentation.from_hash(hash) } || []
       user
