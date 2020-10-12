@@ -40,7 +40,13 @@ module KeycloakAdmin
     private
 
     def http_error(response)
-      raise "Keycloak: The request failed with response code #{response.code} and message: #{response.body}"
+      # raise "Keycloak: The request failed with response code #{response.code} and message: #{response.body}"
+      message = begin
+                  JSON.parse(response.body).try(:[], 'errorMessage')
+                rescue
+                  response.body
+                end
+      raise KkError.new("Keycloak error: #{message}", response.code)
     end
   end
 end
