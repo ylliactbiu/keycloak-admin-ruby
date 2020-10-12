@@ -46,7 +46,7 @@ module KeycloakAdmin
                 rescue
                   response.body
                 end
-      raise KkError.new("Keycloak error: #{message}", response.code)
+      raise KeycloakAdmin::KkError.new("Keycloak error: #{message}", response.code)
     end
   end
 end
